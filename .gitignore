@@ -1,0 +1,45 @@
+# Python - Virtual environments
+.venv/
+venv/
+env/
+
+# Python - Cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python - Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Python - Code quality
+.mypy_cache/
+.ruff_cache/
+
+# IDE and editors
+.idea/
+.vscode/
+
+# Frontend - Node.js
+node_modules/
+
+# Frontend - Build
+dist/
+build/
+.vite/
+
+# Frontend - Testing
+coverage/
+
+# Logs
+*.log
+
+# Operating systems
+.DS_Store
+Thumbs.db
