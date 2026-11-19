@@ -31,12 +31,12 @@ class ActivityLog(Base):
     )
 
     task_id: Mapped[int | None] = mapped_column(
-        ForeignKey("tasks.id"),
+        ForeignKey("tasks.id", ondelete="SET NULL"),
         nullable=True,
     )
 
     list_id: Mapped[int | None] = mapped_column(
-        ForeignKey("task_lists.id"),
+        ForeignKey("task_lists.id", ondelete="SET NULL"),
         nullable=True,
     )
 

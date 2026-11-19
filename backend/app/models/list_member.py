@@ -37,7 +37,7 @@ class ListMember(Base):
     )
 
     list_id: Mapped[int] = mapped_column(
-        ForeignKey("task_lists.id"),
+        ForeignKey("task_lists.id", ondelete="CASCADE"),
         nullable=False,
     )
 
