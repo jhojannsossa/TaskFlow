@@ -1,0 +1,24 @@
+# API REST
+fastapi
+uvicorn[standard]
+
+# Database
+sqlalchemy
+psycopg[binary]
+alembic
+
+# Data validation and configuration
+pydantic
+pydantic-settings
+email-validator
+python-dotenv
+
+# Authentication and security
+PyJWT
+pwdlib[argon2]
+python-multipart
+
+# Testing
+pytest
+pytest-cov
+httpx
