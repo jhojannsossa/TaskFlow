@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from backend.app.core.config import settings
 from backend.app.database.connection import get_db
+from backend.app.routers.auth import router as auth_router
 
 
 app = FastAPI(
@@ -12,6 +13,8 @@ app = FastAPI(
     description="API REST para la gestión de tareas personales y colaborativas.",
     version=settings.APP_VERSION,
 )
+
+app.include_router(auth_router)
 
 
 @app.get("/")
