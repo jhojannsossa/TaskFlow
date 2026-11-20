@@ -278,3 +278,64 @@ Los cambios de estructura se gestionaran con Alembic.
 ## 11. Estado
 
 Diseno inicial pendiente de implementacion y pruebas.
+
+## Migraciones de base de datos
+
+TaskFlow utiliza Alembic para gestionar los cambios
+en el esquema de PostgreSQL.
+
+Migración inicial:
+d0a7908e20ec_create_initial_taskflow_tables.py
+
+### Comandos principales
+
+Consultar la migración actual:
+
+python -m alembic current
+
+Aplicar las migraciones pendientes:
+
+python -m alembic upgrade head
+
+Comprobar cambios pendientes en los modelos:
+
+python -m alembic check
+
+## Pruebas automatizadas
+
+Las pruebas de integración de la base de datos
+se encuentran en:
+
+backend/app/tests/test_database.py
+
+Se utiliza Pytest, SQLAlchemy y PostgreSQL.
+
+### Pruebas implementadas
+
+1. Crear un usuario.
+2. Crear una lista y una tarea relacionadas.
+3. Rechazar correos electrónicos duplicados.
+4. Rechazar estados de tarea inválidos.
+5. Rechazar prioridades inválidas.
+6. Rechazar colaboradores duplicados.
+7. Rechazar referencias a listas inexistentes.
+8. Verificar eliminación CASCADE de tareas y miembros.
+9. Verificar SET NULL en el historial de actividades.
+
+### Ejecutar las pruebas
+
+python -m pytest backend/app/tests/test_database.py -v
+
+Resultado verificado: 9 pruebas superadas.
+
+### Aislamiento de las pruebas
+
+Cada prueba utiliza una transacción externa y
+una sesión SQLAlchemy con SAVEPOINT.
+
+Al finalizar, los cambios se revierten mediante
+ROLLBACK, evitando conservar los registros
+ficticios generados durante las pruebas.
+
+Las pruebas deben ejecutarse únicamente en una
+base de datos de desarrollo o pruebas.
