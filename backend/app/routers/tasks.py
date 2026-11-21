@@ -74,10 +74,13 @@ def list_tasks(
             ListMember,
             ListMember.list_id == TaskList.id,
         )
-        .where(
+       .where(
             or_(
                 TaskList.owner_id == current_user.id,
-                ListMember.user_id == current_user.id,
+                (
+                    (ListMember.user_id == current_user.id)
+                    & (TaskList.visibility == "shared")
+                ),
             )
         )
     )

@@ -403,3 +403,164 @@ def test_outsider_cannot_list_private_tasks(
     }
 
     assert private_task_id not in visible_ids
+
+def test_member_cannot_read_task_in_private_list(
+    client,
+    db_session,
+    users,
+    task_list,
+):
+    """Un colaborador no puede consultar tareas de una lista privada."""
+
+    created = client.post(
+        "/api/tasks",
+        headers=auth_headers(users[0]),
+        json={
+            "list_id": task_list.id,
+            "title": "Tarea privada",
+        },
+    )
+
+    assert created.status_code == 201
+    task_id = created.json()["id"]
+
+    task_list.visibility = "private"
+    db_session.flush()
+
+    response = client.get(
+        f"/api/tasks/{task_id}",
+        headers=auth_headers(users[1]),
+    )
+
+    assert response.status_code == 404
+
+
+def test_member_cannot_list_tasks_in_private_list(
+    client,
+    db_session,
+    users,
+    task_list,
+):
+    """Las tareas privadas no aparecen en el listado del colaborador."""
+
+    created = client.post(
+        "/api/tasks",
+        headers=auth_headers(users[0]),
+        json={
+            "list_id": task_list.id,
+            "title": "Tarea oculta",
+        },
+    )
+
+    assert created.status_code == 201
+    task_id = created.json()["id"]
+
+    task_list.visibility = "private"
+    db_session.flush()
+
+    response = client.get(
+        "/api/tasks",
+        headers=auth_headers(users[1]),
+    )
+
+    assert response.status_code == 200
+
+    visible_ids = {
+        task["id"]
+        for task in response.json()
+    }
+
+    assert task_id not in visible_ids
+
+
+def test_editor_cannot_create_task_in_private_list(
+    client,
+    db_session,
+    users,
+    task_list,
+):
+    """Un editor pierde permiso de creación cuando la lista es privada."""
+
+    task_list.visibility = "private"
+    db_session.flush()
+
+    response = client.post(
+        "/api/tasks",
+        headers=auth_headers(users[1]),
+        json={
+            "list_id": task_list.id,
+            "title": "Tarea no permitida",
+        },
+    )
+
+    assert response.status_code == 404
+
+
+def test_editor_cannot_update_task_in_private_list(
+    client,
+    db_session,
+    users,
+    task_list,
+):
+    """Un editor no puede modificar tareas de una lista privada."""
+
+    created = client.post(
+        "/api/tasks",
+        headers=auth_headers(users[0]),
+        json={
+            "list_id": task_list.id,
+            "title": "Tarea protegida",
+        },
+    )
+
+    assert created.status_code == 201
+    task_id = created.json()["id"]
+
+    task_list.visibility = "private"
+    db_session.flush()
+
+    response = client.patch(
+        f"/api/tasks/{task_id}",
+        headers=auth_headers(users[1]),
+        json={"title": "Cambio no autorizado"},
+    )
+
+    assert response.status_code == 404
+
+
+def test_editor_cannot_delete_task_in_private_list(
+    client,
+    db_session,
+    users,
+    task_list,
+):
+    """Un editor no puede eliminar tareas de una lista privada."""
+
+    created = client.post(
+        "/api/tasks",
+        headers=auth_headers(users[0]),
+        json={
+            "list_id": task_list.id,
+            "title": "Tarea que debe conservarse",
+        },
+    )
+
+    assert created.status_code == 201
+    task_id = created.json()["id"]
+
+    task_list.visibility = "private"
+    db_session.flush()
+
+    response = client.delete(
+        f"/api/tasks/{task_id}",
+        headers=auth_headers(users[1]),
+    )
+
+    assert response.status_code == 404
+
+    owner_response = client.get(
+        f"/api/tasks/{task_id}",
+        headers=auth_headers(users[0]),
+    )
+
+    assert owner_response.status_code == 200
