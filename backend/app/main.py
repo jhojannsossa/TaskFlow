@@ -7,6 +7,7 @@ from backend.app.core.config import settings
 from backend.app.database.connection import get_db
 from backend.app.routers.auth import router as auth_router
 from backend.app.routers.tasks import router as tasks_router
+from backend.app.routers.lists import router as lists_router
 
 
 app = FastAPI(
@@ -17,6 +18,7 @@ app = FastAPI(
 
 app.include_router(auth_router)
 app.include_router(tasks_router)
+app.include_router(lists_router)
 
 
 @app.get("/")
@@ -52,4 +54,3 @@ def database_health(db: Session = Depends(get_db)):
             status_code=503,
             detail="Database connection failed",
         )
-

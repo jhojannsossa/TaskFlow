@@ -26,6 +26,12 @@ def get_accessible_list(
     if task_list.owner_id == user_id:
         return task_list
 
+    if task_list.visibility != "shared":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lista no encontrada.",
+        )
+
     membership = db.scalar(
         select(ListMember).where(
             ListMember.list_id == list_id,
