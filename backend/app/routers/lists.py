@@ -6,6 +6,7 @@ from backend.app.core.dependencies import get_current_user
 from backend.app.database.connection import get_db
 from backend.app.models.list_member import ListMember
 from backend.app.models.task_list import TaskList
+from backend.app.models.activity import ActivityLog
 from backend.app.models.user import User
 from backend.app.schemas.task_list import (
     TaskListCreate,
@@ -42,11 +43,29 @@ def create_list(
         owner_id=current_user.id,
     )
 
+    # Crear la lista y obtener su identificador.
     db.add(new_list)
+    db.flush()
+
+    # Registrar la creación de la lista.
+    db.add(
+        ActivityLog(
+            user_id=current_user.id,
+            list_id=new_list.id,
+            action="list_created",
+            details={
+                "name": new_list.name,
+                "visibility": new_list.visibility,
+            },
+        )
+    )
+
+    # Guardar la lista y su actividad en una sola transacción.
     db.commit()
     db.refresh(new_list)
 
     return new_list
+
 
 
 @router.get(
@@ -160,13 +179,45 @@ def update_list(
             detail="La visibilidad no puede ser nula",
         )
 
+    # Guardar los valores anteriores para el historial.
+    previous_values = {
+        field: getattr(task_list, field)
+        for field in changes
+    }
+
+    # Aplicar los cambios a la lista.
     for field, value in changes.items():
         setattr(task_list, field, value)
 
+    # Registrar únicamente los campos que realmente cambiaron.
+    changed_fields = {
+        field: {
+            "previous": previous_values[field],
+            "new": value,
+        }
+        for field, value in changes.items()
+        if previous_values[field] != value
+    }
+
+    if changed_fields:
+        db.add(
+            ActivityLog(
+                user_id=current_user.id,
+                list_id=task_list.id,
+                action="list_updated",
+                details={
+                    "name": task_list.name,
+                    "changes": changed_fields,
+                },
+            )
+        )
+
+    # Guardar la actualización y la actividad juntas.
     db.commit()
     db.refresh(task_list)
 
     return task_list
+
 
 
 @router.delete(
@@ -188,8 +239,30 @@ def delete_list(
             detail="Lista no encontrada",
         )
 
+    # Guardar los datos antes de eliminar la lista.
+    deleted_list_id = task_list.id
+    deleted_list_name = task_list.name
+    deleted_visibility = task_list.visibility
+
+    # Registrar la eliminación sin mantener una referencia
+    # a la lista que dejará de existir.
+    db.add(
+        ActivityLog(
+            user_id=current_user.id,
+            list_id=None,
+            action="list_deleted",
+            details={
+                "deleted_list_id": deleted_list_id,
+                "name": deleted_list_name,
+                "visibility": deleted_visibility,
+            },
+        )
+    )
+
+    # Eliminar la lista y guardar el evento.
     db.delete(task_list)
     db.commit()
+
 
 @router.post(
     "/{list_id}/members",
@@ -251,7 +324,25 @@ def add_list_member(
         role=member_data.role,
     )
 
+    # Crear el nuevo colaborador.
     db.add(new_member)
+    db.flush()
+
+    # Registrar la incorporación del colaborador.
+    db.add(
+        ActivityLog(
+            user_id=current_user.id,
+            list_id=list_id,
+            action="list_member_added",
+            details={
+                "member_user_id": new_member.user_id,
+                "role": new_member.role,
+                "list_name": task_list.name,
+            },
+        )
+    )
+
+    # Guardar ambas operaciones en una sola transacción.
     db.commit()
     db.refresh(new_member)
 
@@ -341,12 +432,35 @@ def update_list_member(
             detail="Colaborador no encontrado",
         )
 
-    membership.role = member_data.role
+       # Guardar el rol anterior.
+    previous_role = membership.role
+    new_role = member_data.role
 
+    # Actualizar el rol del colaborador.
+    membership.role = new_role
+
+    # Registrar la actividad solo si el rol cambió.
+    if previous_role != new_role:
+        db.add(
+            ActivityLog(
+                user_id=current_user.id,
+                list_id=list_id,
+                action="list_member_role_changed",
+                details={
+                    "member_user_id": membership.user_id,
+                    "previous_role": previous_role,
+                    "new_role": new_role,
+                    "list_name": task_list.name,
+                },
+            )
+        )
+
+    # Guardar ambos cambios en una sola transacción.
     db.commit()
     db.refresh(membership)
 
     return membership
+
 
 @router.delete(
     "/{list_id}/members/{user_id}",
@@ -381,5 +495,24 @@ def delete_list_member(
             detail="Colaborador no encontrado",
         )
 
+    # Guardar los datos del colaborador antes de eliminarlo.
+    removed_user_id = membership.user_id
+    removed_role = membership.role
+
+    # Registrar la eliminación del colaborador.
+    db.add(
+        ActivityLog(
+            user_id=current_user.id,
+            list_id=list_id,
+            action="list_member_removed",
+            details={
+                "member_user_id": removed_user_id,
+                "previous_role": removed_role,
+                "list_name": task_list.name,
+            },
+        )
+    )
+
+    # Eliminar al colaborador y guardar la actividad.
     db.delete(membership)
     db.commit()

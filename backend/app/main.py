@@ -8,6 +8,8 @@ from backend.app.database.connection import get_db
 from backend.app.routers.auth import router as auth_router
 from backend.app.routers.tasks import router as tasks_router
 from backend.app.routers.lists import router as lists_router
+from backend.app.routers.notifications import router as notifications_router
+from backend.app.routers.dashboard import router as dashboard_router
 
 
 app = FastAPI(
@@ -19,6 +21,8 @@ app = FastAPI(
 app.include_router(auth_router)
 app.include_router(tasks_router)
 app.include_router(lists_router)
+app.include_router(notifications_router)
+app.include_router(dashboard_router)
 
 
 @app.get("/")

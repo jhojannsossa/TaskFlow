@@ -20,6 +20,10 @@ class TaskCreate(BaseModel):
 
     description: str | None = None
 
+    assigned_to: int | None = Field(
+        default=None,
+        gt=0,
+)
     status: TaskStatus = "todo"
 
     priority: TaskPriority = "medium"
@@ -37,6 +41,11 @@ class TaskUpdate(BaseModel):
     )
 
     description: str | None = None
+
+    assigned_to: int | None = Field(
+        default=None,
+        gt=0,
+    )
 
     status: TaskStatus | None = None
 

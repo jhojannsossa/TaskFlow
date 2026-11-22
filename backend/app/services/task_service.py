@@ -78,3 +78,102 @@ def get_accessible_task(
     )
 
     return task
+
+def validate_task_assignee(
+    db: Session,
+    list_id: int,
+    assigned_to: int | None,
+) -> None:
+    """Valida que el responsable pueda acceder a la lista."""
+
+    if assigned_to is None:
+        return
+
+    from backend.app.models.user import User
+
+    user = db.get(User, assigned_to)
+
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El usuario asignado no existe o está inactivo.",
+        )
+
+    task_list = db.get(TaskList, list_id)
+
+    if task_list is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lista no encontrada.",
+        )
+
+    if task_list.owner_id == assigned_to:
+        return
+
+    if task_list.visibility != "shared":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="No puedes asignar colaboradores a una lista privada.",
+        )
+
+    membership = db.scalar(
+        select(ListMember).where(
+            ListMember.list_id == list_id,
+            ListMember.user_id == assigned_to,
+        )
+    )
+
+    if membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El usuario asignado no pertenece a esta lista.",
+        )
+def validate_task_assignee(
+    db: Session,
+    list_id: int,
+    assigned_to: int | None,
+) -> None:
+    """Comprueba que el responsable pueda acceder a la lista."""
+
+    if assigned_to is None:
+        return
+
+    from backend.app.models.user import User
+
+    user = db.get(User, assigned_to)
+
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El usuario asignado no existe o está inactivo.",
+        )
+
+    task_list = db.get(TaskList, list_id)
+
+    if task_list is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lista no encontrada.",
+        )
+
+    if task_list.owner_id == assigned_to:
+        return
+
+    if task_list.visibility != "shared":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="No puedes asignar colaboradores a una lista privada.",
+        )
+
+    membership = db.scalar(
+        select(ListMember).where(
+            ListMember.list_id == list_id,
+            ListMember.user_id == assigned_to,
+        )
+    )
+
+    if membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="El usuario asignado no pertenece a esta lista.",
+        )
