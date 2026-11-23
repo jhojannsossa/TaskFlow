@@ -1,0 +1,65 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #020100;
+  background-color: #f5f5f5;
+
+  --color-primary: #ff4700;
+  --color-black: #020100;
+  --color-white: #ffffff;
+  --color-gray: #9c9c9c;
+  --color-coral: #ffa37f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+
+.welcome-card {
+  background: var(--color-white);
+  padding: 48px;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.brand-label {
+  color: var(--color-primary);
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+h1 {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+p {
+  color: #666666;
+  font-size: 18px;
+}
+
+.status-label {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #fff0e9;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
