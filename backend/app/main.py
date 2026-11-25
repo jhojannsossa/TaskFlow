@@ -11,7 +11,7 @@ from backend.app.routers.tasks import router as tasks_router
 from backend.app.routers.lists import router as lists_router
 from backend.app.routers.notifications import router as notifications_router
 from backend.app.routers.dashboard import router as dashboard_router
-
+from backend.app.routers.users import router as users_router
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -35,6 +35,7 @@ app.include_router(tasks_router)
 app.include_router(lists_router)
 app.include_router(notifications_router)
 app.include_router(dashboard_router)
+app.include_router(users_router)
 
 
 @app.get("/")

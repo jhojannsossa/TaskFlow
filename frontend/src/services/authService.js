@@ -27,3 +27,13 @@ export async function getCurrentUser() {
 export function logoutUser() {
   sessionStorage.removeItem("taskflow_token");
 }
+
+export async function getUserByEmail(email) {
+  const response = await api.get("/api/users/by-email", {
+    params: {
+      email: email.trim().toLowerCase()
+    }
+  });
+
+  return response.data;
+}
