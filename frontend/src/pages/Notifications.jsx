@@ -22,13 +22,20 @@ function Notifications() {
   const [processingId, setProcessingId] = useState(null);
   const [processingAll, setProcessingAll] = useState(false);
 
+  // Obtener las notificaciones del usuario autenticado.
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
       const data = await getNotifications();
+
       setNotifications(data);
+
+      // Avisar al menú lateral para sincronizar el contador.
+      window.dispatchEvent(
+        new Event("taskflow:notifications-updated")
+      );
     } catch (err) {
       setError(
         err.response?.data?.detail ||
@@ -43,10 +50,12 @@ function Notifications() {
     loadNotifications();
   }, [loadNotifications]);
 
+  // Calcular las notificaciones que aún no se han leído.
   const unreadCount = notifications.filter(
     (notification) => !notification.is_read
   ).length;
 
+  // Marcar una notificación individual como leída.
   async function handleMarkAsRead(notificationId) {
     setProcessingId(notificationId);
     setError("");
@@ -63,6 +72,11 @@ function Notifications() {
         )
       );
 
+      // Actualizar el contador de la barra lateral.
+      window.dispatchEvent(
+        new Event("taskflow:notifications-updated")
+      );
+
       setSuccess("Notificación marcada como leída.");
     } catch (err) {
       setError(
@@ -74,6 +88,7 @@ function Notifications() {
     }
   }
 
+  // Marcar todas las notificaciones como leídas.
   async function handleMarkAllAsRead() {
     setProcessingAll(true);
     setError("");
@@ -89,7 +104,14 @@ function Notifications() {
         }))
       );
 
-      setSuccess("Todas las notificaciones se marcaron como leídas.");
+      // Actualizar el contador de la barra lateral.
+      window.dispatchEvent(
+        new Event("taskflow:notifications-updated")
+      );
+
+      setSuccess(
+        "Todas las notificaciones se marcaron como leídas."
+      );
     } catch (err) {
       setError(
         err.response?.data?.detail ||
@@ -100,8 +122,11 @@ function Notifications() {
     }
   }
 
+  // Formatear las fechas para mostrarlas en español.
   function formatDate(dateValue) {
-    if (!dateValue) return "Fecha no disponible";
+    if (!dateValue) {
+      return "Fecha no disponible";
+    }
 
     const date = new Date(dateValue);
 
@@ -125,7 +150,9 @@ function Notifications() {
           <span className="notifications-eyebrow">
             FACTORÍA F5 · TASKFLOW
           </span>
+
           <h1>Notificaciones</h1>
+
           <p>
             Mantente al día con la actividad de tus tareas
             y listas compartidas.
@@ -141,6 +168,7 @@ function Notifications() {
         <div className="notifications-toolbar">
           <div>
             <h2>Mis notificaciones</h2>
+
             <p>
               {unreadCount === 0
                 ? "No tienes notificaciones pendientes."
@@ -170,6 +198,7 @@ function Notifications() {
               }
             >
               <CheckCheck size={16} />
+
               {processingAll
                 ? "Actualizando..."
                 : "Marcar todas como leídas"}
@@ -178,13 +207,19 @@ function Notifications() {
         </div>
 
         {error && (
-          <div className="notifications-error" role="alert">
+          <div
+            className="notifications-error"
+            role="alert"
+          >
             {error}
           </div>
         )}
 
         {success && (
-          <div className="notifications-success" role="status">
+          <div
+            className="notifications-success"
+            role="status"
+          >
             {success}
           </div>
         )}
@@ -192,6 +227,7 @@ function Notifications() {
         {loading ? (
           <div className="notifications-empty">
             <RefreshCw size={28} />
+
             <p>Cargando notificaciones...</p>
           </div>
         ) : notifications.length === 0 ? (
@@ -199,7 +235,9 @@ function Notifications() {
             <div className="notifications-empty-icon">
               <Bell size={30} />
             </div>
+
             <h3>Todo al día</h3>
+
             <p>
               Cuando tengas nuevas notificaciones,
               aparecerán aquí.
@@ -231,7 +269,9 @@ function Notifications() {
 
                   <span
                     className={`notifications-status ${
-                      notification.is_read ? "read" : "unread"
+                      notification.is_read
+                        ? "read"
+                        : "unread"
                     }`}
                   >
                     {notification.is_read
@@ -253,6 +293,7 @@ function Notifications() {
                     }
                   >
                     <Check size={16} />
+
                     {processingId === notification.id
                       ? "Guardando..."
                       : "Marcar como leída"}

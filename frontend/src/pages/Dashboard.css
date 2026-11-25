@@ -240,3 +240,27 @@
     padding: 16px;
   }
 }
+
+/* Contador de notificaciones pendientes */
+
+.dashboard-notification-badge {
+  margin-left: auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ff4700;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.dashboard-nav-link.active .dashboard-notification-badge {
+  background: #ffffff;
+  color: #ff4700;
+}

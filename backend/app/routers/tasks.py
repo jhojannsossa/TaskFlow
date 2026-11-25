@@ -171,6 +171,13 @@ def update_task(
     previous_status = task.status
     previous_assignee = task.assigned_to
 
+    # Guardar los valores anteriores para identificar
+    # qué campos se modificaron realmente.
+    previous_values = {
+        field: getattr(task, field)
+        for field in changes
+    }
+
     if "status" in changes:
         new_status = changes["status"]
 
@@ -215,6 +222,125 @@ def update_task(
             task_id=task.id,
             list_id=task.list_id,
         )
+
+    # Notificar al propietario cuando otro usuario
+    # modifica una tarea de una lista compartida.
+    # Identificar únicamente los campos cuyo valor cambió.
+    changed_fields = [
+        field
+        for field, new_value in changes.items()
+        if previous_values[field] != new_value
+    ]
+
+    # Notificar al propietario cuando un colaborador
+    # modifica una tarea de una lista compartida.
+    if changed_fields:
+        task_list = db.get(TaskList, task.list_id)
+
+        if (
+            task_list is not None
+            and task_list.visibility == "shared"
+        ):
+            status_labels = {
+                "todo": "Por hacer",
+                "in_progress": "En progreso",
+                "done": "Hecha",
+            }
+
+            priority_labels = {
+                "low": "Baja",
+                "medium": "Media",
+                "high": "Alta",
+                "urgent": "Urgente",
+            }
+
+            change_descriptions = []
+
+            for field in changed_fields:
+                old_value = previous_values[field]
+                new_value = changes[field]
+
+                if field == "status":
+                    old_label = status_labels.get(
+                        old_value, str(old_value)
+                    )
+                    new_label = status_labels.get(
+                        new_value, str(new_value)
+                    )
+
+                    change_descriptions.append(
+                        f"estado: {old_label} → {new_label}"
+                    )
+
+                elif field == "priority":
+                    old_label = priority_labels.get(
+                        old_value, str(old_value)
+                    )
+                    new_label = priority_labels.get(
+                        new_value, str(new_value)
+                    )
+
+                    change_descriptions.append(
+                        f"prioridad: {old_label} → {new_label}"
+                    )
+
+                elif field == "assigned_to":
+                    change_descriptions.append(
+                        "se cambió el responsable"
+                    )
+
+                elif field == "title":
+                    change_descriptions.append(
+                        f"título: '{old_value}' → '{new_value}'"
+                    )
+
+                elif field == "description":
+                    change_descriptions.append(
+                        "se modificó la descripción"
+                    )
+
+                elif field == "due_date":
+                    change_descriptions.append(
+                        "se modificó la fecha de vencimiento"
+                    )
+
+                else:
+                    change_descriptions.append(
+                        f"se modificó {field}"
+                    )
+
+            change_details = "; ".join(change_descriptions)
+
+            # Obtener los colaboradores de la lista.
+            member_ids = db.scalars(
+                select(ListMember.user_id).where(
+                    ListMember.list_id == task.list_id
+                )
+            ).all()
+
+            # Incluir al propietario y a los colaboradores.
+            recipient_ids = set(member_ids)
+            recipient_ids.add(task_list.owner_id)
+
+            # El usuario que realiza el cambio no
+            # necesita recibir su propia notificación.
+            recipient_ids.discard(current_user.id)
+
+            
+            notification_message = (
+                f"Se modificó la tarea '{task.title}': "
+                f"{change_details}."
+            )
+
+            for recipient_id in recipient_ids:
+                create_notification(
+                    db=db,
+                    user_id=recipient_id,
+                    notification_type="shared_list_update",
+                    message=notification_message,
+                    task_id=task.id,
+                    list_id=task.list_id,
+                )
 
     # Registrar los cambios realizados en la tarea.
     if changes:
