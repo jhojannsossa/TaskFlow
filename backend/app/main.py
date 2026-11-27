@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -18,6 +19,20 @@ app = FastAPI(
     description="API REST para la gestión de tareas personales y colaborativas.",
     version=settings.APP_VERSION,
 )
+
+# Crear el directorio de fotografías si no existe.
+settings.AVATAR_UPLOAD_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+# Permitir visualizar las fotografías guardadas.
+app.mount(
+    "/uploads/avatars",
+    StaticFiles(directory=settings.AVATAR_UPLOAD_DIR),
+    name="avatars",
+)
+
 
 app.add_middleware(
     CORSMiddleware,

@@ -14,6 +14,7 @@ from backend.app.models.user import User
 from backend.app.schemas.user import (
     UserCreate,
     UserResponse,
+    UserProfileResponse,
     UserLogin,
     TokenResponse,
 )
@@ -119,10 +120,7 @@ def login_user(
         token_type="bearer",
     )
 
-@router.get(
-    "/me",
-    response_model=UserResponse,
-)
+@router.get("/me", response_model=UserProfileResponse)
 def get_my_profile(
     current_user: User = Depends(get_current_user),
 ):

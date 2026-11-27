@@ -43,3 +43,6 @@ coverage/
 # Operating systems
 .DS_Store
 Thumbs.db
+
+# User-uploaded files
+backend/uploads/

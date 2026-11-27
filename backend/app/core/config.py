@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     APP_ENV: str = "development"
     DEBUG: bool = False
+    # Profile images
+    AVATAR_MAX_SIZE: int = 2 * 1024 * 1024
+    AVATAR_UPLOAD_DIR: Path = (
+        Path(__file__).resolve().parents[2]
+        / "uploads"
+        / "avatars"
+    )
 
     # Database
     DB_HOST: str = "localhost"

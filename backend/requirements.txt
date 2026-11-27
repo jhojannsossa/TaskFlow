@@ -16,9 +16,11 @@ python-dotenv
 # Authentication and security
 PyJWT
 pwdlib[argon2]
-python-multipart
 
 # Testing
 pytest
 pytest-cov
 httpx
+
+Pillow==13.0.0
+python-multipart==0.0.34

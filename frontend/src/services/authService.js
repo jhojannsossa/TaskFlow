@@ -37,3 +37,33 @@ export async function getUserByEmail(email) {
 
   return response.data;
 }
+
+export async function updateCurrentUser(userData) {
+  const response = await api.patch(
+    "/api/users/me",
+    userData
+  );
+
+  return response.data;
+}
+
+export async function uploadProfileAvatar(file) {
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+  const response = await api.post(
+    "/api/users/me/avatar",
+    formData
+  );
+
+  return response.data;
+}
+
+export async function deleteProfileAvatar() {
+  const response = await api.delete(
+    "/api/users/me/avatar"
+  );
+
+  return response.data;
+}

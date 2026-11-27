@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -20,7 +20,7 @@ class UserCreate(BaseModel):
 
 
 class UserResponse(BaseModel):
-    """Información pública que devuelve la API."""
+    """Información pública básica del usuario."""
 
     id: int
     name: str
@@ -29,6 +29,16 @@ class UserResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserProfileResponse(UserResponse):
+    """Información privada del perfil autenticado."""
+
+    avatar_url: str | None = None
+    job_title: str | None = None
+    birth_date: date | None = None
+    share_birthday: bool = False
+
 
 
 class UserLogin(BaseModel):
@@ -43,3 +53,23 @@ class TokenResponse(BaseModel):
 
     access_token: str
     token_type: str = "bearer"
+
+class UserUpdate(BaseModel):
+    """Datos que el usuario puede modificar en su perfil."""
+
+    name: str | None = Field(
+        default=None,
+        min_length=2,
+        max_length=100,
+    )
+
+    email: EmailStr | None = None
+
+    job_title: str | None = Field(
+        default=None,
+        max_length=100,
+    )
+
+    birth_date: date | None = None
+
+    share_birthday: bool | None = None

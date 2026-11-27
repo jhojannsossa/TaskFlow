@@ -1,14 +1,17 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     Boolean,
+    Date,
     DateTime,
     Identity,
     Integer,
     String,
+    false,
     func,
     true,
 )
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.database.base import Base
@@ -36,6 +39,33 @@ class User(Base):
 
     password_hash: Mapped[str] = mapped_column(
         String(255),
+        nullable=False,
+    )
+
+ # Fotografía del perfil del usuario.
+    avatar_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+
+    # Cargo que desempeña dentro de la empresa.
+    job_title: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    # Fecha de nacimiento. Es un dato opcional.
+    birth_date: Mapped[date | None] = mapped_column(
+        Date,
+        nullable=True,
+    )
+
+    # Permite compartir la celebración del cumpleaños.
+    # Por privacidad, inicialmente está desactivado.
+    share_birthday: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default=false(),
         nullable=False,
     )
 
