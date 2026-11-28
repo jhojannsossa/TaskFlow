@@ -11,7 +11,6 @@ from sqlalchemy import (
     func,
     true,
 )
-
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.database.base import Base
@@ -42,26 +41,21 @@ class User(Base):
         nullable=False,
     )
 
- # Fotografía del perfil del usuario.
     avatar_url: Mapped[str | None] = mapped_column(
         String(500),
         nullable=True,
     )
 
-    # Cargo que desempeña dentro de la empresa.
     job_title: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
     )
 
-    # Fecha de nacimiento. Es un dato opcional.
     birth_date: Mapped[date | None] = mapped_column(
         Date,
         nullable=True,
     )
 
-    # Permite compartir la celebración del cumpleaños.
-    # Por privacidad, inicialmente está desactivado.
     share_birthday: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
@@ -89,40 +83,49 @@ class User(Base):
         nullable=False,
     )
 
+    # Listas que pertenecen al usuario.
     owned_lists = relationship(
         "TaskList",
         back_populates="owner",
     )
-    # ORM relationships
+
+    # Tareas creadas por el usuario.
     created_tasks = relationship(
         "Task",
         foreign_keys="Task.created_by",
         back_populates="creator",
     )
 
+    # Tareas asignadas al usuario.
     assigned_tasks = relationship(
         "Task",
         foreign_keys="Task.assigned_to",
         back_populates="assignee",
     )
 
+    # Participación en listas compartidas.
     memberships = relationship(
         "ListMember",
         back_populates="user",
     )
 
+    # Notificaciones recibidas por el usuario.
     notifications = relationship(
         "Notification",
+        foreign_keys="Notification.user_id",
         back_populates="user",
     )
 
+    # Registro de actividad.
     activity_logs = relationship(
         "ActivityLog",
         back_populates="user",
     )
 
+    # Preferencias de notificaciones.
     notification_preference = relationship(
         "NotificationPreference",
         back_populates="user",
         uselist=False,
     )
+
