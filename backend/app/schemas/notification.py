@@ -27,6 +27,11 @@ class NotificationPreferenceResponse(BaseModel):
     status_changes: bool
     assignments: bool
     shared_list_updates: bool
+
+    # Preferencias de cumpleaños
+    birthday_greetings: bool
+    birthday_colleagues: bool
+
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -40,3 +45,7 @@ class NotificationPreferenceUpdate(BaseModel):
     status_changes: bool | None = None
     assignments: bool | None = None
     shared_list_updates: bool | None = None
+
+    # Preferencias de cumpleaños
+    birthday_greetings: bool | None = None
+    birthday_colleagues: bool | None = None

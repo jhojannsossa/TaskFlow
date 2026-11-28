@@ -55,6 +55,22 @@ class NotificationPreference(Base):
         nullable=False,
     )
 
+    # Recibir una felicitación en mi cumpleaños.
+    birthday_greetings: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        server_default=true(),
+        nullable=False,
+    )
+
+    # Recibir avisos de cumpleaños de compañeros.
+    birthday_colleagues: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        server_default=true(),
+        nullable=False,
+    )
+
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
